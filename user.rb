@@ -12,7 +12,7 @@ class User
     end
 
     def screen_name
-        doc = dload "http://twitter.com/users/show/#{uid}"
+        doc = dload "http://twitter.com/users/show/#{uid}.xml"
         @screen_name ||= (doc/'screen_name').inner_html
     end
 
@@ -22,17 +22,17 @@ class User
     end
 
     def num_following
-        doc = dload "http://twitter.com/users/show/#{uid}"
+        doc = dload "http://twitter.com/users/show/#{uid}.xml"
         @num_following ||= (doc/'friends_count').inner_html.to_i
     end
 
     def num_followers
-        doc = dload "http://twitter.com/users/show/#{uid}"
+        doc = dload "http://twitter.com/users/show/#{uid}.xml"
         @followers_count ||= (doc/'followers_count').inner_html.to_i    
     end
 
     def id
-        doc = dload "http://twitter.com/users/show/#{uid}"
+        doc = dload "http://twitter.com/users/show/#{uid}.xml"
         @twitter_id ||= (doc/'user/id').inner_html.to_i
     end
 
@@ -43,7 +43,7 @@ class User
     protected
 
     def dload uri
-        @cache[uri] ||= Hpricot(open(uri).read)
+        @cache[uri] ||= Hpricot(open(uri, :http_basic_authentication=>[UID, PWD]).read)
     end
 
 end

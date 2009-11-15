@@ -1,0 +1,350 @@
+people tweet about all sorts of stuff.
+
+sometimes it's really important ground breaking world changing stuff...
+but most of the time it's ridiculous waste of time stuff like 'i ate some cheese'
+
+in fact how much do people actually tweet about cheese?
+and when they do, what are the most important cheese related topics?
+
+lets gather some data...
+
+using the twitter search api this is dead simple. here's a hacktastic script which does a polling search for cheese. start it up and bake at 200deg C, i mean, run overnight.
+
+bash> ./collect_cheese.rb >> cheese.out
+
+in the morning we've got some tweets about cheese, yay!
+
+let's poke around, but first some l33t hax0r bash aliases for the sake of brevity  
+
+alias t='tail'
+alias h='head'
+alias s='sort'
+alias u='uniq'
+alias g='grep'
+
+let's start with a sample, the first 10 tweets...
+
+bash> ./parse_cheese_out.rb < cheese.out | h
+Pasta with pesto and cheese. Some watermelon but alas did not get to the salad. At least not yet. http://twitpic.com/pf1rr
+guess imma have a steak n cheese since a certain sum1 stunntin in bring me chines
+@souljaboytellem Cheese and Bread XD
+Great tips for awesome Pizza. Who loves Pizza. Cheese Matters http://bit.ly/42xkZS
+Hey bring that cheese.
+Milwaukee airport officially 10x better than Lambert. Not surprisingly, a large cheese selection. Kind of a cheese motif in the shops here.
+http://twitpic.com/pf1pl - The Cheese Cake is served.
+LA has amazing restaurants. had the best grilled cheese (w/sharp cheddar, gruyere and dijon mustard) at comme ca for lunch with @maxwanger
+Yummy pepperoni and bleu cheese pizza consumed. Next up a glass of wine. Yay weekend!
+Applebees take-out flow aka Dinner for 1- Grilled Chicken/Shrimp and cheddar jack mac & cheese.
+
+to get a context on what words are being used lets find the most frequent words, ie 1-grams (where an n-gram is a phrase of n terms) in the first 10 tweets.
+we'll sanitize by removing weird characters, downcasing, removing urls, etc
+
+bash> ./parse_cheese_out.rb < cheese.out | h | ./sanitise.rb | ./cheese_grams.rb 1 | s | u -c | s -n | t
+2 in
+2 of
+2 with
+3 for
+3 not
+3 pizza
+4 the
+5 a
+5 and
+11 cheese
+
+(this says 'cheese' was mentioned 11 times while 'with' was mentioned twice)
+
+observations;
+1- it's no surprise that cheese is the most frequent since it was our search term.
+2- the most frequent words that aren't cheese, 'and', 'a' and 'the', are classic english constructs.
+3- the next most frequent term is 'pizza'. is pizza the biggest cheese use? well, in these 10 tweets perhaps...
+
+next lets consider the frequency of bi-grams, that is 2 word phrases.
+
+bash> ./parse_cheese_out.rb < cheese.out | h | ./sanitise.rb | ./cheese_grams.rb 2 | s | u -c | s -n | t
+1 to the
+1 up a
+1 watermelon but
+1 who loves
+1 wine yay
+1 with maxwanger
+1 with pesto
+1 w sharp
+1 yay weekend
+1 yummy pepperoni
+
+this result is not too interesting, or surprising. seems there are no common two word tuples across the first 10 tweets. fair enough.
+
+how about bigrams across 100 tweets instead of 10?
+
+bash> ./parse_cheese_out.rb < cheese.out | h -100 | ./sanitise.rb | ./cheese_grams.rb 2 | s | u -c | s -n | t
+4 mac and
+4 nacho cheese
+5 & cheese
+5 cheese and
+5 grilled cheese
+5 i love
+6 cheese cake
+6 hot pocket
+6 with cheese
+14 and cheese
+
+now we're getting somewhere!
+
+more (arguable) observations
+1) when people are making something with cheese they say 'X and cheese' more than 'cheese and X' ( from the raw frequencies )
+2) people like cheese more than they dislike it; ( the only sentiment is 'love' )
+3) 'with' is a reasonable synonym for 'and' ( since they are the two most frequent bigrams ending in cheese )
+
+one that jumps out at me is 'mac and'. mac ? is this macaroni?
+
+let's try 3grams...
+
+bash> ./parse_cheese_out.rb < cheese.out | h -100 | ./sanitise.rb | ./cheese_grams.rb 3 | s | u -c | s -n | t
+3 mac & cheese
+3 not so delicious
+3 pocket next time
+3 pocket not so
+3 so delicious as
+3 sounds better go
+3 the ham and
+3 wine and cheese
+3 you like cheese
+4 mac and cheese
+
+hmmm. looks like mac _is_ macaroni.
+
+from wikipedia
+" Macaroni and cheese (also referred to as macaroni cheese in the United Kingdom and mac 'n' cheese in parts of the United States and Canada) "
+so macaroni cheese is pretty popular! ( at least in the 3gram space, at this time of day, which is late afternoon in the united states timezone )
+
+does this pattern continue as we consider more tweets? say 1000?
+
+bash> ./parse_cheese_out.rb < cheese.out | h -1000 | ./sanitise.rb | ./cheese_grams.rb 3 | s | u -c | s -n | t
+7 macaroni and cheese
+7 philly cheese steak
+8 on the moon
+9 steak and cheese
+10 ham and cheese
+11 wine and cheese
+28 chuck e cheese
+33 mac and cheese
+33 mac & cheese
+48 mac n cheese
+
+yep. how about 10,000 ?
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | ./cheese_grams.rb 3 | s | u -c | s -n | t
+74 wine and cheese
+77 a grilled cheese
+78 egg and cheese
+78 ham and cheese
+81 with cream cheese
+89 at chuck e
+194 mac & cheese
+294 mac and cheese
+301 mac n cheese
+337 chuck e cheese
+
+bam! chuck e cheese, one of the classic kids health food chains of america, takes over!
+
+there is an overlap between 'at chuck e' and 'chuck e cheese' so let's try 4 grams...
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | ./cheese_grams.rb 4 | s | u -c | s -n | t
+27 mac n cheese and
+27 water on the moon
+28 bacon egg & cheese
+28 mac and cheese and
+29 call of duty modern
+29 duty modern warfare 2
+29 of duty modern warfare
+32 bacon egg and cheese
+58 to chuck e cheese
+82 at chuck e cheese
+
+observations...
+1) more people tweet when they're at chuck e cheese than when they're planning to go there.
+2) 'call of duty modern warfare 2' wtf1?
+3) 'water on the moon' wtf2?
+
+bash> ./parse_cheese_out.rb < cheese.out | ./sanitise.rb | g 'call of duty' | h
+unlocked royale with cheese in call of duty modern warfare 2 xboxtweet
+unlocked royale with cheese in call of duty modern warfare 2 xboxtweet
+unlocked royale with cheese in call of duty modern warfare 2 xboxtweet
+unlocked royale with cheese in call of duty modern warfare 2 xboxtweet
+making stromboli with tomoto cheese and spinach then going to best buy to get the new call of duty
+unlocked royale with cheese in call of duty modern warfare 2 xboxtweet
+unlocked royale with cheese in call of duty modern warfare 2 xboxtweet
+i unlocked the royale with cheese achievement on call of duty modern warfare 2
+unlocked royale with cheese in call of duty modern warfare 2 xboxtweet
+unlocked royale with cheese in call of duty modern warfare 2 xboxtweet
+
+so looks like one of those auto-tweet things (do they have a name yet?) people playing this on xbox have the option
+to tweet about how awesomely awesome they are when they unlock some secret level.
+
+how best to get rid of them? let's try exact deduping of a tweet and see if they 'go away'
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | wc -l
+10000
+(sanity)
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | sort | uniq | wc -l
+9773
+
+so it's getting rid of 230 odd tweets, not too destructive..
+
+what about wtf2, ie 'water on the moon' ?
+
+bash> ./parse_cheese_out.rb < cheese.out | g -i 'water on the moon' | h
+Water on the moon... what?!? No cheese?
+Water on the moon...wow. Did they find any cheese? I hope not, cause then there'll be some big ass moon rats.
+Water on the moon? They probably just didn't realize this "water" is actually cheese.
+RT @jdickerson: The significant amount of water on the moon means, of course, that the cheese is mozzarella.
+so the moons not made of cheese? google's logo is changed to celebrate the discovery of water on the moon
+NASA finds water on the moon. "Moon River" composed in 1961. So, why is NASA surprised? Anyway, can't make cheese without water, DOH.
+"Significant water on the Moon" - so it looks like grey Swiss cheese, but with a consistency closer to mozarella rather than Parmesan...
+Forgive my lack of awe at the news of water on the moon. I mean, used to think it was cheese. Water's not as cool as cheese.
+RT @Grundy: Forgive my lack of awe at the news of water on the moon. I mean, used to think it was cheese. Water's not as cool as cheese.
+RT @berkun: Of course there is water on the moon. The moon is made of cheese, and cheese has water in it.
+
+ahha, i see. comical reactions to nasa recent lcross impact report.
+
+hypothesis
+1) if i had more data and did a sliding window analysis of say a few days then 'water on the moon' would appear and disappear as a trending topic when dealing with cheese
+2) people would be tweeting less about chuck e cheese in the middle of week. need more data to check this one...
+
+let's try an hugmongous 10gram check
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | s | u | ./cheese_grams.rb 10 | s | u -c | s -n | t
+8 is something that doesnt matter unless you are a cheese
+8 mad ur man because he wont pull his dick out
+8 man because he wont pull his dick out in chucky
+8 ur man because he wont pull his dick out in
+9 dick out in chucky cheese so u can give him
+9 he wont pull his dick out in chucky cheese so
+9 his dick out in chucky cheese so u can give
+9 out in chucky cheese so u can give him some
+9 pull his dick out in chucky cheese so u can
+9 wont pull his dick out in chucky cheese so u
+
+this time. really. wtf?
+
+i can't believe i'm actually going to do this next grep...
+
+bash> ./parse_cheese_out.rb < cheese.out | g -i 'pull his dick out' | h
+RT @KevinHart4real #youKnowurahoeif U get mad @ur man becuz he won't pull his dick out n chucky cheese so u can give him head! Boom..oh my
+RT @KevinHart4real: #youKnowurahoeif you get mad @ ur man because he won't pull his dick out in chucky cheese so u can give him some head!
+RT @KevinHart4real: #youKnowurahoeif you get mad @ ur man because he won't pull his dick out in chucky cheese so u can give him some head!
+RT :@KevinHart4real #youKnowurahoeif you get mad @ ur man because he won't pull his dick out in chucky cheese so u can give him some head!
+#youKnowurahoeif you get mad @ ur man because he won't pull his dick out in chucky cheese so u can give him some head! (via @KevinHart4real)
+RT @KevinHart4real #youKnowurahoeif you get mad @ ur man because he won't pull his dick out in chucky cheese so u can give him some head!
+RT @KevinHart4real: #youKnowurahoeif you get mad @ ur man because he won't pull his dick out in chucky cheese so u can give him some hea ...
+#youKnowurahoeif you get mad at cho boyfriend cuz he won't pull his dick out in chucky cheese so u can give him some head! BOOOOOOM !!!!!
+RT @KevinHart4real #youKnowurahoeif you get mad @ ur man because he won't pull his dick out in chucky cheese so u can give him some head! Bo
+RT @KevinHart4real: #youKnowurahoeif you get mad @ ur man because he won't pull his dick out in chucky cheese so u can give him some head!
+
+so retweets are a bit adhoc and it seems that they aren't pulled out as part of the deduping
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | s | u | g 'pull his dick out'
+gangstressb youknowurahoeif you get mad ur man because he wont pull his dick out in chucky cheese so u can give him some head boooom
+ha rt kevinhart4real youknowurahoeif u get mad ur man because he wont pull his dick out in chucky cheese so u can give him some head
+ha rt kevinhart4real youknowurahoeif u get mad ur man cause he wont pull his dick out n chucky cheese so u can give him sum head boom
+kevinhart4real youknowurahoeif you get mad ur man because he wont pull his dick out in chucky cheese so u can give him some head ewww
+rt kevinhart4real youknowurahoeif u get mad ur man becuz he wont pull his dick out n chucky cheese so u can give him head boom oh my
+rt kevinhart4real youknowurahoeif you get mad ur man because he wont pull his dick out in chucky cheese so u can give him some hea
+rt kevinhart4real youknowurahoeif you get mad ur man because he wont pull his dick out in chucky cheese so u can give him some head
+rt kevinhart4real youknowurahoeif you get mad ur man because he wont pull his dick out in chucky cheese so u can give him some head bo
+rt kevinhart4real youknowurahoeif you get mad ur man because he wont pull his dick out in chucky cheese so u can give him some head boooom
+youknowurahoeif you get mad at cho boyfriend cuz he wont pull his dick out in chucky cheese so u can give him some head boooooom
+youknowurahoeif you get mad ur man because he wont pull his dick out in chucky cheese so u can give him some head via kevinhart4real
+
+observations:
+1) people retweet in a quite adhoc fashion ( i guess this is why twitter has recently introduced the retweet feature? )
+2) ppl abbrev however they can 2 get a tweet 2 140 chars. all the tweets have 'so u can' instead of 'so you can' so i'm assuming that was in the original tweet. 
+but 'because' has been shortened to 'cause' or even 'cuz' so that peoples additional insightful commentary (such as 'ewww' or 'booom') could
+be appended... more statistically synonym building oppurtunities!
+3) people left it as 'chucky cheese' instead correcting it back to 'chuck e cheese'
+
+anyways seems like removing all retweets is arguable. it would depend on what you're trying to analyse for...
+let's give it a crack anyways and use a simple retweet check (ie starts with 'rt ')
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | g -v "^rt " | s | u | ./cheese_grams.rb 10 | s | u -c | s -n | t
+5 pull his dick out in chucky cheese so u can
+5 savory pies ham and cheese breakfast quiche submitted by bobkat2000
+5 the early bird may get the worm but the second
+5 wont pull his dick out in chucky cheese so u
+6 and savory pies ham and cheese breakfast quiche submitted by
+6 clue thin slices of stuffed with cheese and ham and
+6 get the worm but the second mouse gets the cheese
+6 quiche and savory pies ham and cheese breakfast quiche submitted
+6 slices of stuffed with cheese and ham and then sauteed
+6 thin slices of stuffed with cheese and ham and then
+
+looks like people are retweeting some kind of recipe...
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | s | u | g 'thin slices of stuffed'
+mystery phrase is v a b u clue thin slices of stuffed with cheese and ham and then sauteed
+mystery phrase is v a c o b eu clue thin slices of stuffed with cheese and ham and then sauteed
+mystery phrase is vea c do b eu clue thin slices of stuffed with cheese and ham and then sauteed
+mystery phrase is vea cordo b eu clue thin slices of stuffed with cheese and ham and then sauteed
+mystery phrase is veal cordo b eu clue thin slices of stuffed with cheese and ham and then sauteed
+mystery phrase is veal cordo bleu clue thin slices of stuffed with cheese and ham and then sauteed
+
+??? maybe it's not a retweet? mystery phrase? is this some kind of game???
+seems so, check out http://twitter.com/tweet_words
+
+this type of duplication would require a more complex deduping; perhaps shingling or simhash bucketing. for another day....
+
+so in summary the final 1 to 4 grams are....
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | g -v "^rt " | s | u | ./cheese_grams.rb 1 | s | u -c | s -n | t
+1336 is
+1465 my
+1597 of
+1619 with
+2065 to
+3157 a
+3161 i
+3408 the
+4175 and
+10213 cheese
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | g -v "^rt " | s | u | ./cheese_grams.rb 2 | s | u -c | s -n | t
+310 of cheese
+359 the cheese
+362 e cheese
+375 chuck e
+402 grilled cheese
+409 n cheese
+431 & cheese
+445 cream cheese
+796 cheese and
+1018 and cheese
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | g -v "^rt " | s | u | ./cheese_grams.rb 3 | s | u -c | s -n | t
+72 wine and cheese
+75 ham and cheese
+77 egg and cheese
+81 a grilled cheese
+84 with cream cheese
+94 at chuck e
+203 mac & cheese
+300 mac n cheese
+305 mac and cheese
+342 chuck e cheese
+
+bash> ./parse_cheese_out.rb < cheese.out | h -10000 | ./sanitise.rb | g -v "^rt " | s | u | ./cheese_grams.rb 4 | s | u -c | s -n | t
+21 with cream cheese frosting
+22 chuck e cheese with
+23 and mac and cheese
+24 a grilled cheese sandwich
+25 bacon egg & cheese
+28 mac n cheese and
+31 mac and cheese and
+32 bacon egg and cheese
+57 to chuck e cheese
+87 at chuck e cheese
+
+todos:
+1) collect some data and compare use over a weekend compared to a weekday compared to the entire week
+2) employ a more advanced deduping algorithm, i've been looking for an excuse to try some modifications to my sketching algorithms
+
+to be continued, who knew cheese could be so much fun!!! 

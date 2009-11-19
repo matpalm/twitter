@@ -1,1 +1,21 @@
-mysql tgraph < slurp.sql | grep -v tids > ids
+simple status slurper
+requires beanstalkd
+
+get a list of tids
+eg: mysql tgraph < slurp.sql | grep -v tids > ids
+
+bash> beanstalkd &
+
+bash> export UID_PWD=mat_kelcey:PASSWORDGOESHERE 
+bash> ./queuer < ids &
+bash> ./fetcher 10 
+
+wtf is happening? 
+queuer checks rate limit of twitter and fills queue with whatever capacity is allowed until reset
+fetchers read off queue and do the fetch spewing out to a file
+
+TODOS: 
+
+change to event machine; only because it'd be interesting to learn. my api limit means is the bottleneck, not calling curl
+
+

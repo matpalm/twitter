@@ -1,3 +1,13 @@
+notes to self.....
+
+curl running on newt fetching gardenhose in 1hr chunks
+
+fetch_and_chop_last_line.sh YYYMMHH
+- brings across hour chunks
+- reprocesses into a single file with partial lines removed
+- adds size to sizes list
+
+wip...
 
 fill_in_the_tweets.rb
 

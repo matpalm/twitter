@@ -1,0 +1,13 @@
+
+fill_in_the_tweets.rb
+
+parse a sample.20091208.json.gz
+
+extract tweet_ids and add to one file; tweet.ids
+extract deletes and add to another file; delete.ids
+
+find min,max of tweet.ids (don't want to consider deletes since someone can delete from forever ago)
+merge tweet.ids, delete.ids into ignore.ids
+
+generate every number from min to max that is not in ignore.ids
+

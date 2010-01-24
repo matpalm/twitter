@@ -7,17 +7,24 @@ fetch_and_chop_last_line.sh YYYMMHH
 - reprocesses into a single file with partial lines removed
 - adds size to sizes list
 
-wip...
 
-fill_in_the_tweets.rb
+todo: fill_in_the_tweets.rb 
+( a util for filling in the gaps in the garden hoses )
 
 parse a sample.20091208.json.gz
 
-extract tweet_ids and add to one file; tweet.ids
-extract deletes and add to another file; delete.ids
+extract tweet_ids and deletes and output
+if an id is NOT a delete it's a candidate for min or max
 
-find min,max of tweet.ids (don't want to consider deletes since someone can delete from forever ago)
-merge tweet.ids, delete.ids into ignore.ids
+output min and max at end seperately
 
-generate every number from min to max that is not in ignore.ids
+sort output
 
+read min, max, output
+
+readline while output < min
+
+readline
+ if line != lastline+1
+  output all from lastline to line
+ lastline = line

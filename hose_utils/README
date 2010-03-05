@@ -1,30 +1,13 @@
-notes to self.....
+crontab entry
+something to add to crontab to get gardenhose script to restart hourly (blocks sometimes)
+( for me this runs on my nano itx always-on server )
 
-curl running on newt fetching gardenhose in 1hr chunks
+start.sh
+the script to kick off hourly, streams to a file
+( for me this runs on my nano itx always-on server )
 
-fetch_and_chop_last_line.sh YYYMMHH
-- brings across hour chunks
-- reprocesses into a single file with partial lines removed
-- adds size to sizes list
+fetch_and_chop_last_line.sh
+a script to run from my dev box to pull down from my nano itx the most recent tweets
 
-
-todo: fill_in_the_tweets.rb 
-( a util for filling in the gaps in the garden hoses )
-
-parse a sample.20091208.json.gz
-
-extract tweet_ids and deletes and output
-if an id is NOT a delete it's a candidate for min or max
-
-output min and max at end seperately
-
-sort output
-
-read min, max, output
-
-readline while output < min
-
-readline
- if line != lastline+1
-  output all from lastline to line
- lastline = line
+*rb
+various little scripts for parsing tweets

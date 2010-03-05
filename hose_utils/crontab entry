@@ -1,0 +1,1 @@
+5 2 * * * /data/twitter/gardenhose/start.sh 2>&1 >> /tmp/start.out

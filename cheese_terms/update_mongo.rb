@@ -17,7 +17,7 @@ while true do
 
 	col.save tweet
 
-	puts "extracted for tweet_id=#{tweet['id']} from [#{tweet['text']}] the terms #{tweet['text_terms'].inspect}"
+	puts "#{Time.now} extracted for tweet_id=#{tweet['id']} from [#{tweet['text']}] the terms #{tweet['text_terms'].inspect}"
 
 end
 

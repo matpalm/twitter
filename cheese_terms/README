@@ -1,0 +1,29 @@
+README 
+
+-- general setup
+
+bash> export APPID=sdkfskdjfnsd # yahoo appid
+
+-- populate db
+
+bash> time zcat /data/twitter/gardenhose/cheese.20100128.json.gz | ./insert_into_mongo.rb
+7s
+
+irb> require 'mongo'
+irb> db = Mongo::Connection.new.db('tweets')
+irb> db['tweets'].size
+13953
+
+if only 10 tweets present
+irb> db['tweets'].find().each { |d| puts d['text'] }
+@_ykv Cheese Puffs + Self-Gratification = Snackturbation!
+jimmy mac and cheese, go away please.
+@ZeRoTe me apunto a las Bacon&Cheese Fries !!!!
+...
+
+-- update
+
+runs as fast as possible, sleeps 1m if error (inc rate limit)
+bash> ./update_mongo.rb
+
+

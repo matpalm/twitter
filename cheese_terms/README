@@ -31,3 +31,15 @@ to include
 { :text_terms => ["grilled cheese", "cupboards", "walmart", "fridge", "cheese soup"] }
 
 
+to see how many you've done 
+irb> require 'rubygems'
+irb> require 'mongo'
+irb> mongo = Mongo::Connection.new
+irb> db = mongo.db 'tweets'
+irb> col = db['tweets']
+irb> col.count 
+13953 # ie this many tweets in total
+irb> col.find({'has_tweet_terms' => true}).count
+5305 # have termified this many so far
+
+

@@ -14,6 +14,7 @@ while true do
 	break unless tweet
 
 	tweet['text_terms'] = tweet['text'].sanitise.lookup_terms_from_yahoo
+	tweet['has_tweet_terms'] = true # for ease of later querying, must be a mongo query way to do this cleanly!
 
 	col.save tweet
 

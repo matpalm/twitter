@@ -10,8 +10,8 @@ STDIN.each do |line|
 		tweet = JSON::parse(line)
 		next unless tweet.has_key? 'text'
 		text = tweet['text']
-		puts text.downcase
-	rescue
+		puts text.downcase.gsub(/\n/,' ').gsub(/\s+/,' ')
+	rescue Exception => e
 		STDERR.puts "FAIL on #{line}"
 	end
 end

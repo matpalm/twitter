@@ -27,6 +27,9 @@ class MongoLoader
           # insert sanitised version of text
           tweet['sanitised_text'] = sanitiser.sanitise(tweet['text'])
 
+          # remove guff
+          tweet.delete 'profile_image_url'
+
           # save
           col.insert(tweet)
           new_records += 1

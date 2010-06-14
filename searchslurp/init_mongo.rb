@@ -11,6 +11,9 @@ end
 def connect_to_mongo
   mongo = Mongo::Connection.new
   db = mongo.db 'tweets'
-  db['tweets']
+  col = db['tweets']
+  col.create_index("id")
+  col.create_index("epoch_time")
+  col
 end
 

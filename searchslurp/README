@@ -1,28 +1,28 @@
 
+first start mongo with
+$ run_mongo.sh
+
+----------------------------------------------------
+
 collect tweets with...
-$ ./collect.rb >> search_results.json
+$ ./collect.rb "#worldcup"
 
-from time to time, leaving it as long as you can
-(it keeps where it's up to in a file called collect_progress)
+this starts the slurp and loads docs into directly into mongo
+filters to only load new tweets since search api returns multiples,
+especially after stopping/starting collection process
 
-to swap output file out wait until it's on a REFRESH and run
-$ cp search_results.json search_results.old.json; :> search_results.json
+-----------------------------------------------------
 
------------------------------
+if we need to change what preparsing of date we want
+(eg want to tokenise on collection)
 
-load into mongo with...
-(this handles dedupping)
+we can stop collect.rb
+make the change
+start collect.rb
+and then catch up the existing documents with a call to update_existing_documents.rb
+(after editing update_existing_documents.rb of course)
 
-1) kill running slurp
-2) run
-$ ./load_latest_into_mongo.sh
-3) as soon as it's started restart slurp
+------------------------------
 
-TODO: all this in one script
-
--------------------------------
-
-if a schema change is ever made for load_into_mongo.rb
-we can catch up the existing documents with a call to update_existing_documents.rb
-
+for poking around in irb...
 irb> require 'rubygems'; require 'mongo'; mongo = Mongo::Connection.new;db = mongo.db 'tweets';col = db['tweets']

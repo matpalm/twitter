@@ -2,6 +2,9 @@
 require 'rubygems'
 require 'json'
 require 'cgi'
+require 'init_mongo.rb'
+require 'date'
+require 'time'
 
 raise 'usage: collect.rb "search term"' unless ARGV.length==1
 query = "?q=#{CGI.escape(ARGV.first)}"
@@ -28,16 +31,28 @@ while true do
   STDERR.puts "*** #{cmd}"
 
   resp_text = `#{cmd}`	
-  STDOUT.puts resp_text
-  STDOUT.flush
 
   begin
     resp = JSON.parse(resp_text)
 
-    ids = resp["results"].collect { |result| result['id'].to_i }
-    STDERR.puts "ids: [#{ids.min},#{ids.max}]"
-    #tweet = CGI.unescapeHTML(result['text']).gsub("\n"," ")    
-    
+    if resp.has_key? 'results'
+      col = connect_to_mongo
+      existing_records = new_records = 0
+      resp['results'].each do |tweet|
+        id = tweet['id']
+        if col.find("id"=>id).count == 1
+          existing_records += 1
+        else
+          created_at_str = tweet['created_at']
+          epoch_time = Time.parse(created_at_str).to_i
+          tweet['epoch_time'] = epoch_time
+          col.insert(tweet)
+          new_records += 1
+        end      
+      end
+      puts "#existing_records=#{existing_records} #new_records=#{new_records} total_number_records=#{col.count.commaify}"
+    end
+
     if resp['next_page']
       STDERR.puts "**** NEXT PAGE"
       url_path = resp['next_page']

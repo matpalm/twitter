@@ -2,9 +2,7 @@
 require 'rubygems'
 require 'json'
 require 'cgi'
-require 'init_mongo.rb'
-require 'date'
-require 'time'
+require 'mongo_loader.rb'
 
 raise 'usage: collect.rb "search term"' unless ARGV.length==1
 query = "?q=#{CGI.escape(ARGV.first)}"
@@ -22,37 +20,24 @@ STDERR.puts "initial url_path=#{url_path}"
 
 since_id = nil
 
-while true do
+loop do
   STDERR.puts "\n#{Time.now}"
 
+  # run new query
   request_url = url_root + url_path
   request_url += "&since_id=#{since_id}" if since_id  
   cmd = "curl -s '#{request_url}'"
   STDERR.puts "*** #{cmd}"
-
   resp_text = `#{cmd}`	
 
   begin
+    # parse response
     resp = JSON.parse(resp_text)
 
-    if resp.has_key? 'results'
-      col = connect_to_mongo
-      existing_records = new_records = 0
-      resp['results'].each do |tweet|
-        id = tweet['id']
-        if col.find("id"=>id).count == 1
-          existing_records += 1
-        else
-          created_at_str = tweet['created_at']
-          epoch_time = Time.parse(created_at_str).to_i
-          tweet['epoch_time'] = epoch_time
-          col.insert(tweet)
-          new_records += 1
-        end      
-      end
-      puts "#existing_records=#{existing_records} #new_records=#{new_records} total_number_records=#{col.count.commaify}"
-    end
+    # load into mongo
+    MongoLoader.new.load(resp)
 
+    # decide what to do next, next page or wait for refresh?
     if resp['next_page']
       STDERR.puts "**** NEXT PAGE"
       url_path = resp['next_page']
@@ -65,13 +50,20 @@ while true do
       sleep_time = 30
     end
 
+    # ensure we are still getting 100 per page
+    # this appears to be dropped in refresh urls?
+    url_path += "&rpp=100"
+
+    # write progress to file
     url_file = File.open('collect_progress','w')	
     url_file.puts url_path
     url_file.close
     
+    # yawn
     sleep sleep_time
     
   rescue Exception => e
+    # in case of exception, start again!
     STDERR.puts "OMG! contents #{resp_text}"
     STDERR.puts e.inspect
     url_path = query

@@ -1,17 +1,9 @@
 #!/usr/bin/env ruby
-require 'rubygems'
-require 'mongo'
-require 'json'
+require 'init_mongo.rb'
+require 'date'
+require 'time'
 
-class Fixnum
-  def commaify
-    self.to_s.gsub(/(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/,'\1,\2')
-  end
-end
-
-mongo = Mongo::Connection.new
-db = mongo.db 'tweets'
-col = db['tweets']
+col = connect_to_mongo
 
 if (col.count==0)
   puts "creating index"
@@ -31,6 +23,10 @@ STDIN.each do |search_result|
     if col.find("id"=>id).count == 1
       existing_records += 1
     else
+
+      created_at_str = tweet['created_at']
+      epoch_time = Time.parse(created_at_str).to_i
+      tweet['epoch_time'] = epoch_time
       col.insert(tweet)
       new_records += 1
     end

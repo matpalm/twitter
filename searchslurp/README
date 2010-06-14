@@ -12,16 +12,17 @@ $ cp search_results.json search_results.old.json; :> search_results.json
 
 load into mongo with...
 (this handles dedupping)
-$ ./load_into_mongo.rb < search_results.old.json
 
-can then ditch tweets.old (or archive off if your paranoid)
+1) kill running slurp
+2) run
+$ ./load_latest_into_mongo.sh
+3) as soon as it's started restart slurp
+
+TODO: all this in one script
 
 -------------------------------
 
-analysing the tweets can be done with...
+if a schema change is ever made for load_into_mongo.rb
+we can catch up the existing documents with a call to update_existing_documents.rb
 
-
-
-$ cat world_cup_2.1.tweets | extract_tweets_from_search_results.rb | min_max_dates.rb
-
-to show min/max of tweets
+irb> require 'rubygems'; require 'mongo'; mongo = Mongo::Connection.new;db = mongo.db 'tweets';col = db['tweets']

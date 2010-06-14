@@ -5,14 +5,17 @@
 require 'init_mongo.rb'
 require 'date'
 require 'time'
+require 'sanitise.rb'
+
+sanitiser = Sanitiser.new(:duplicate_spaces_removed)
 
 num_updated = 0
 
 col = connect_to_mongo
-col.find("epoch_time"=>nil).each do |tweet|
-  created_at_str = tweet['created_at']
-  epoch_time = Time.parse(created_at_str).to_i
-  tweet['epoch_time'] = epoch_time
+col.find('sanitised_text'=>nil).each do |tweet|
+  text = tweet['text']
+  sanitised_text = sanitiser.sanitise(text)
+  tweet['sanitised_text'] = sanitised_text
   col.save(tweet)
   num_updated += 1
 end

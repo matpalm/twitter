@@ -1,10 +1,15 @@
 require 'rubygems'
 require 'init_mongo.rb'
 require 'time'
+require 'sanitise.rb'
+
+
 
 class MongoLoader
 
   def load search_results
+
+    sanitiser = Sanitiser.new(:duplicate_spaces_removed)
 
     if search_results.has_key? 'results'
       col = connect_to_mongo
@@ -14,9 +19,15 @@ class MongoLoader
         if col.find("id"=>id).count == 1
           existing_records += 1
         else
+          # insert epoch time
           created_at_str = tweet['created_at']
           epoch_time = Time.parse(created_at_str).to_i
           tweet['epoch_time'] = epoch_time
+
+          # insert sanitised version of text
+          tweet['sanitised_text'] = sanitiser.sanitise(tweet['text'])
+
+          # save
           col.insert(tweet)
           new_records += 1
         end      

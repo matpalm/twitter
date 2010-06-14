@@ -8,26 +8,20 @@ raise 'usage: collect.rb "search term"' unless ARGV.length==1
 query = "?q=#{CGI.escape(ARGV.first)}"
 
 url_root = 'http://search.twitter.com/search.json'
+url_path = File.exists?('collect_progress') ? File.read('collect_progress') : "#{query}&rpp=100"
 
-url_path = ''
-if File.exists?('collect_progress') 
-  url_path = File.read('collect_progress')
-else
-  url_path = "#{query}&rpp=100"
-end
-
-STDERR.puts "initial url_path=#{url_path}"
+puts "initial url_path=#{url_path}"
 
 since_id = nil
 
 loop do
-  STDERR.puts "\n#{Time.now}"
+  puts "\n#{Time.now}"
 
   # run new query
   request_url = url_root + url_path
   request_url += "&since_id=#{since_id}" if since_id  
   cmd = "curl -s '#{request_url}'"
-  STDERR.puts "*** #{cmd}"
+  puts "*** #{cmd}"
   resp_text = `#{cmd}`	
 
   begin
@@ -39,14 +33,14 @@ loop do
 
     # decide what to do next, next page or wait for refresh?
     if resp['next_page']
-      STDERR.puts "**** NEXT PAGE"
+      puts "**** NEXT PAGE"
       url_path = resp['next_page']
       sleep_time = 1
     else      
       url_path = resp['refresh_url'] 
       url_path =~ /since_id=(\d+)/
       since_id = $1
-      STDERR.puts "**** REFRESH #{url_path} new since_id=#{since_id}"
+      puts "**** REFRESH #{url_path} new since_id=#{since_id}"
       sleep_time = 30
     end
 

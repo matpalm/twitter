@@ -1,0 +1,27 @@
+
+collect tweets with...
+$ ./collect.rb >> search_results.json
+
+from time to time, leaving it as long as you can
+(it keeps where it's up to in a file called collect_progress)
+
+to swap output file out wait until it's on a REFRESH and run
+$ cp search_results.json search_results.old.json; :> search_results.json
+
+-----------------------------
+
+load into mongo with...
+(this handles dedupping)
+$ ./load_into_mongo.rb < search_results.old.json
+
+can then ditch tweets.old (or archive off if your paranoid)
+
+-------------------------------
+
+analysing the tweets can be done with...
+
+
+
+$ cat world_cup_2.1.tweets | extract_tweets_from_search_results.rb | min_max_dates.rb
+
+to show min/max of tweets

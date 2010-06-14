@@ -6,13 +6,14 @@ require 'time'
 min,max = nil
 num_tweets = 0
 STDIN.each do |line|
-	begin
-		tweet = JSON::parse(line)
-		next unless tweet.has_key? 'text'
-		text = tweet['text']
-		puts text.downcase.gsub(/\n/,' ').gsub(/\s+/,' ')
-	rescue Exception => e
-		STDERR.puts "FAIL on #{line}"
-	end
+  begin
+    tweet = JSON::parse(line)
+    next unless tweet.has_key? 'text'
+    text = tweet['text']
+    time = tweet['created_at']
+    puts "#{time} #{text.downcase.gsub(/\n/,' ').gsub(/\t/,' ').gsub(/\s+/,' ')}"
+  rescue Exception => e
+    STDERR.puts "FAIL on #{line}"
+  end
 end
 

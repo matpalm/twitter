@@ -4,5 +4,6 @@ are_you_popular - my first test of twitter api, don't bother even looking at it
 cheese - an analysis of the use of cheese on twitter
 hose_utils - some random utilities for handling the garden hose data
 statuslurp - simple randomish status slurper to augment gardenhose
+searchslurp - utils for picking a term, like hadoop, and fire and forget collecting search results (without using streaming api)
 
 

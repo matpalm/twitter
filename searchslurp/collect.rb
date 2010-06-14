@@ -19,7 +19,9 @@ loop do
 
   # run new query
   request_url = url_root + url_path
-  request_url += "&since_id=#{since_id}" if since_id  
+  request_url += "&since_id=#{since_id}" if since_id  # sometimes lost on pagination (?)
+  request_url += "&rpp=100" # sometimes lost also (?)
+
   cmd = "curl -s '#{request_url}'"
   puts "*** #{cmd}"
   resp_text = `#{cmd}`	
@@ -44,20 +46,18 @@ loop do
       sleep_time = 30
     end
 
-    # ensure we are still getting 100 per page
-    # this appears to be dropped in refresh urls?
-    url_path += "&rpp=100"
-
     # write progress to file
     url_file = File.open('collect_progress','w')	
     url_file.puts url_path
     url_file.close
     
   rescue Exception => e
+
     # in case of exception, start again!
     STDERR.puts "OMG! contents #{resp_text}"
     STDERR.puts e.inspect
     url_path = query
+    since = nil # better to be safe than sorry
     sleep 60
 
   end

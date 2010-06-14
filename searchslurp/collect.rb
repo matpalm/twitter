@@ -53,15 +53,16 @@ loop do
     url_file.puts url_path
     url_file.close
     
-    # yawn
-    sleep sleep_time
-    
   rescue Exception => e
     # in case of exception, start again!
     STDERR.puts "OMG! contents #{resp_text}"
     STDERR.puts e.inspect
     url_path = query
     sleep 60
+
   end
+
+  # yawn
+  sleep sleep_time    
   
 end

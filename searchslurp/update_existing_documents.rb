@@ -17,8 +17,8 @@ def for_each_in clause
   puts "updated #{num_updated.commaify} of #{col.count.commaify} documents"
 end
 
-for_each_in({'profile_image_url'=>{'$ne'=>nil}}) do |tweet|
-  tweet.delete 'profile_image_url'
+for_each_in({'found_with_query'=>nil}) do |tweet|
+  tweet['found_with_query'] = '#worldcup'
 end
 
 =begin

@@ -47,4 +47,5 @@ Sat Jun 12 12:29:25 +1000 2010
 plot of use of #country_icons
 
 $ ./dump_tweets.rb > tweets
-$ cat tweets | ./extract_tags.rb >test.html
+$ cat tweets | ./extract_tags.rb | sort | uniq -c > freq_dts_token
+$ grep "goal\|aud\|worldcup" freq_dts_token  | ./write_html.rb > test.html

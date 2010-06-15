@@ -5,7 +5,8 @@ require 'cgi'
 require 'mongo_loader.rb'
 
 raise 'usage: collect.rb "search term"' unless ARGV.length==1
-query = "?q=#{CGI.escape(ARGV.first)}"
+query_term = ARGV.first
+query = "?q=#{CGI.escape(query_term)}"
 
 url_root = 'http://search.twitter.com/search.json'
 url_path = File.exists?('collect_progress') ? File.read('collect_progress') : "#{query}&rpp=100"
@@ -31,7 +32,7 @@ loop do
     resp = JSON.parse(resp_text)
 
     # load into mongo
-    MongoLoader.new.load(resp)
+    MongoLoader.new.load(resp, query_term)
 
     # decide what to do next, next page or wait for refresh?
     if resp['next_page']

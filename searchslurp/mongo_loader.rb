@@ -7,7 +7,7 @@ require 'sanitise.rb'
 
 class MongoLoader
 
-  def load search_results
+  def load search_results, query
 
     sanitiser = Sanitiser.new(:duplicate_spaces_removed)
 
@@ -19,6 +19,11 @@ class MongoLoader
         if col.find("id"=>id).count == 1
           existing_records += 1
         else
+
+          # insert query used to find this 
+          # note: doesnt mean other queries WOULDNT have found it...
+          tweet['found_with_query'] = query
+
           # insert epoch time
           created_at_str = tweet['created_at']
           epoch_time = Time.parse(created_at_str).to_i

@@ -58,7 +58,7 @@ loop do
     STDERR.puts e.inspect
     url_path = query
     since = nil # better to be safe than sorry
-    sleep 60
+    sleep_time = 60
 
   end
 

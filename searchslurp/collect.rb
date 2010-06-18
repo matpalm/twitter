@@ -15,8 +15,10 @@ puts "initial url_path=#{url_path}"
 
 since_id = nil
 
+loader = MongoLoader.new
+
 loop do
-  puts "\n#{Time.now}"
+  printf "#{Time.now} "
 
   # run new query
   request_url = url_root + url_path
@@ -24,7 +26,6 @@ loop do
   request_url += "&rpp=100" # sometimes lost also (?)
 
   cmd = "curl -s '#{request_url}'"
-  puts "*** #{cmd}"
   resp_text = `#{cmd}`	
 
   begin
@@ -32,19 +33,17 @@ loop do
     resp = JSON.parse(resp_text)
 
     # load into mongo
-    MongoLoader.new.load(resp, query_term)
+    loader.load(resp, query_term)
 
     # decide what to do next, next page or wait for refresh?
     if resp['next_page']
-      puts "**** NEXT PAGE"
       url_path = resp['next_page']
       sleep_time = 1
     else      
       url_path = resp['refresh_url'] 
       url_path =~ /since_id=(\d+)/
       since_id = $1
-      puts "**** REFRESH #{url_path} new since_id=#{since_id}"
-      sleep_time = 30
+      sleep_time = 45
     end
 
     # write progress to file
@@ -64,6 +63,7 @@ loop do
   end
 
   # yawn
+  printf "\n"
   sleep sleep_time    
   
 end

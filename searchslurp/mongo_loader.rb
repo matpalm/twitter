@@ -1,22 +1,34 @@
 require 'rubygems'
-require 'init_mongo.rb'
 require 'time'
 require 'sanitise.rb'
-
-
+require 'init_mongo'
 
 class MongoLoader
 
+  def initialize
+    connect
+  end
+
+  def connect
+    @mongo = Mongo::Connection.new
+    db = @mongo.db 'tweets'
+    @col = db['tweets']
+    @col.create_index("id")
+    @col.create_index("epoch_time")
+  end
+  
   def load search_results, query
 
     sanitiser = Sanitiser.new(:duplicate_spaces_removed)
 
     if search_results.has_key? 'results'
-      col = connect_to_mongo
+
+      connect unless @mongo.connected?
+
       existing_records = new_records = 0
       search_results['results'].each do |tweet|
         id = tweet['id']
-        if col.find("id"=>id).count == 1
+        if @col.find("id"=>id).count == 1
           existing_records += 1
         else
 
@@ -36,11 +48,11 @@ class MongoLoader
           tweet.delete 'profile_image_url'
 
           # save
-          col.insert(tweet)
+          @col.insert(tweet)
           new_records += 1
         end      
       end
-      puts "#existing_records=#{existing_records} #new_records=#{new_records} total_number_records=#{col.count.commaify}"
+      printf "#existing=#{existing_records} #new=#{new_records} #total=#{@col.count.commaify} "
     end
   end
 

@@ -17,7 +17,7 @@ STDIN.each do |time_and_tweet|
   next if interesting_tokens.empty?
 
   time = Time.at(time.to_i)
-  dts = [time.year, time.month, time.day, time.hour].join('_')
+  dts = sprintf("%d_%02d_%02d_%02d_%02d", time.year, time.month, time.day, time.hour, time.min)
 
   interesting_tokens.each { |token| puts "#{dts}\t#{token}" }
 

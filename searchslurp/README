@@ -48,4 +48,21 @@ plot of use of #country_icons
 
 $ ./dump_tweets.rb > tweets
 $ cat tweets | ./extract_tokens.rb | sort | uniq -c > freq_dts_token
-$ grep "goal\|aud\|worldcup" freq_dts_token  | ./write_html.rb > test.html
+$ grep "goal\|aus\|ger\|worldcup" freq_dts_token  | ./write_html.rb > test.html
+
+2010_6_13_15 -> 2010_6_14_15
+
+--- top country code freqs
+
+cat tweets | ./country_codes.rb | sort | uniq -c > country_codes_freqs.tsv
+
+--- top tokens (per country)
+
+$ ./dump_tweets.rb > tweets
+$ cat tweets | ./country_code_pairs.rb > country_code_pairs
+$ cat country_code_pairs | sort | uniq -c | perl -plne's/^\s+//;s/ /\t/;' > country_code_pairs.freqs
+$ pig -x local -p input=country_code_pairs.freqs -p output=top5_country_code_pairs.tsv top_per_country.pig 
+
+displaying a graph for just the top 30 edges (by frequency) 
+$ sort -nr country_code_pairs.freqs | head -30 | ./remove_leading_frequency.pl | ./dotify.rb | ./dotify.rb | dot -Tpng > test.png
+

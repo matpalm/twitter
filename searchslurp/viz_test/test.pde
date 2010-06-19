@@ -1,9 +1,8 @@
 
+final float MAX_TOTAL_SPEED = 200;
+final float REPULSION_FORCE_FROM_GROWING_BALL = 1000;
+
 Ball[] balls;
-// =  { 
-//   new Ball(100, 200, 0, 0, 20), 
-//   new Ball(800, 300, -1, -5, 200)
-//};
 
 int epoch = 0;
 
@@ -16,16 +15,11 @@ void setup() {
     //    v.add(new Ball(200,200,0,0,20));
     //v.add(new Ball(150,50,0,0,20));
     //v.add(new Ball(200,250,-0.5,0,20));
-    for(int x=1;x<10;x++) {
-	for(int y=1;y<6;y++) {
+    for(int x=1;x<10;x++)
+	for(int y=1;y<6;y++)
 	    v.add(new Ball(width*((float)x/10),height*((float)y/6),0,0,20));
-	}
-    }
     balls = new Ball[v.size()];
     v.toArray(balls);
-
-    balls[8].dx=3.8;
-    balls[8].dy=-1.8;
 
     balls[5].growing = true;
 }
@@ -39,16 +33,26 @@ void draw() {
     background(51);
     fill(204);
 
+    // move balls
     for (int i=0; i<balls.length; i++){
 	balls[i].tick();
 	balls[i].draw();
 	balls[i].checkBoundaryCollision();
     }
 
-    for(int i=0;i<balls.length-1;i++) {
-	for(int j=i+1;j<balls.length;j++) {
+    // do collision checks
+    for(int i=0;i<balls.length-1;i++) 
+	for(int j=i+1;j<balls.length;j++) 
 	    checkObjectCollision(balls[i], balls[j]);
-	}
+    
+    // cap max speed of all balls
+    float totalSpeed = 0;
+    for(int i=0;i<balls.length;i++)
+	totalSpeed += balls[i].speed;
+    if (totalSpeed > MAX_TOTAL_SPEED) {
+	float reduceRatio = MAX_TOTAL_SPEED / totalSpeed;
+	for(int i=0;i<balls.length;i++)
+	    balls[i].scaleSpeedBy(reduceRatio);
     }
     
     Ball b = balls[5];
@@ -136,7 +140,7 @@ void checkObjectCollision(Ball b0, Ball b1) {
 	// push away from other ball based on amount of overlap
 	float af0x=0, af0y=0, af1x=0, af1y=0;
 	if (applyRepulsionForce) {
-	    float forceMagnitude = 1000 * overlap;
+	    float forceMagnitude = overlap * REPULSION_FORCE_FROM_GROWING_BALL;
 	    af0x = -forceMagnitude / b0.m;
 	    af0y = -at0y;
 	    af1x = forceMagnitude / b1.m;
@@ -180,7 +184,7 @@ void checkObjectCollision(Ball b0, Ball b1) {
 
 class Ball{
     float x, y;
-    float dx, dy;
+    float dx, dy, speed;
     float ddx, ddy;
     float r, m;
     boolean growing = false;
@@ -200,9 +204,9 @@ class Ball{
     }
 
     void tick() {
-	// TODO limit top speed
 	dx += ddx;
 	dy += ddy;
+	recalcSpeed();
 	x += dx;
 	y += dy;	
 	ddx = ddy = 0;
@@ -231,6 +235,12 @@ class Ball{
 	}
     }
 
+    void scaleSpeedBy(float ratio) {
+	dx *= ratio;
+	dy *= ratio;
+	recalcSpeed();
+    }
+
     void setRadius(float r) {
 	this.r = r;
 	recalcMass();
@@ -238,6 +248,10 @@ class Ball{
 
     void recalcMass() {
        	m = 2 * PI * (r*r);
+    }
+
+    void recalcSpeed() {
+	speed = (float)sqrt(dx*dx+dy*dy);	
     }
 
 }

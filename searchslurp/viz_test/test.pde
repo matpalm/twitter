@@ -27,6 +27,7 @@ void setup() {
     balls[8].dx=3.8;
     balls[8].dy=-1.8;
 
+    balls[5].growing = true;
 }
 
 boolean growing = true;
@@ -50,20 +51,19 @@ void draw() {
 	}
     }
     
-    //    balls[int(random(balls.length))].deltaRadius(0.1);
     Ball b = balls[5];
-    if (growing) {
+    if (b.growing) {
 	b.setRadius(b.r+3);
 	if (b.r > 100) {
 	    b.r = 100;
-	    growing = false;
+	    b.growing = false;
 	}
     }
     else {
 	b.setRadius(b.r-2);
 	if (b.r < 20) {
 	    b.setRadius(20);
-	    growing = true;
+	    b.growing = true;
 	}
     }
 
@@ -80,6 +80,10 @@ void checkObjectCollision(Ball b0, Ball b1) {
     float bVectMag = sqrt(bvx * bvx + bvy * bvy);
     
     if (bVectMag < b0.r + b1.r) {
+
+	// only calculate and apply repulsion force when one of the orbs is growing
+	// it introduces energy into system we want to limit
+	boolean applyRepulsionForce = b0.growing || b1.growing;
 
 	// get angle of bVect
 	float theta  = atan2(bvy, bvx);
@@ -106,13 +110,14 @@ void checkObjectCollision(Ball b0, Ball b1) {
 	float vt1x = cosine * b1.dx + sine * b1.dy;
 	float vt1y = cosine * b1.dy - sine * b1.dx;
 
-	/*
 	// rotate temp accelerations
-	float at0x = cosine * b0.ddx + sine * b0.ddy;
-	float at0y = cosine * b0.ddy - sine * b0.ddx;
-	float at1x = cosine * b1.ddx + sine * b1.ddy;
-	float at1y = cosine * b1.ddy - sine * b1.ddx;
-	*/
+	float at0x=0, at0y=0, at1x=0, at1y=0;
+	if (applyRepulsionForce) {
+	    at0x = cosine * b0.ddx + sine * b0.ddy;
+	    at0y = cosine * b0.ddy - sine * b0.ddx;
+	    at1x = cosine * b1.ddx + sine * b1.ddy;
+	    at1y = cosine * b1.ddy - sine * b1.ddx;
+	}
 
 	/* Now that velocities are rotated, you can use 1D
 	   conservation of momentum equations to calculate 
@@ -125,19 +130,20 @@ void checkObjectCollision(Ball b0, Ball b1) {
 	float vf1x = ((b1.m - b0.m) * vt1x + 2 * b0.m * vt0x) / (b0.m + b1.m);
 	float vf1y = vt1y;
 
-	/*
-	// push away from other ball based on amount of overlap
-	// NOTE: this introduces energy into the system
+	// calculate overlap between balls
 	float overlap = b0.r+b1.r-bVectMag;
-	float forceMagnitude = 2000 * overlap;
-	float af0x = -forceMagnitude / b0.m;
-	float af0y = -at0y;
-	float af1x = forceMagnitude / b1.m;
-	float af1y = at1y;	
-	*/
+
+	// push away from other ball based on amount of overlap
+	float af0x=0, af0y=0, af1x=0, af1y=0;
+	if (applyRepulsionForce) {
+	    float forceMagnitude = 1000 * overlap;
+	    af0x = -forceMagnitude / b0.m;
+	    af0y = -at0y;
+	    af1x = forceMagnitude / b1.m;
+	    af1y = at1y;	
+	}
 
 	// balls have some form of overlap so need to seperate them
-	float overlap = b0.r+b1.r-bVectMag;
 	bt0x -= overlap/2;
 	bt1x += overlap/2;
 	
@@ -162,20 +168,22 @@ void checkObjectCollision(Ball b0, Ball b1) {
 	b1.dx = cosine * vf1x - sine * vf1y;
 	b1.dy = cosine * vf1y + sine * vf1x;
 
-	/*
 	// update accelerations
-	b0.ddx = cosine * af0x - sine * af0y;
-	b0.ddy = cosine * af0y + sine * af0x;
-	b1.ddx = cosine * af1x - sine * af1y;
-	b1.ddy = cosine * af1y + sine * af1x;
-	*/
-
+	if (applyRepulsionForce) {
+	    b0.ddx = cosine * af0x - sine * af0y;
+	    b0.ddy = cosine * af0y + sine * af0x;
+	    b1.ddx = cosine * af1x - sine * af1y;
+	    b1.ddy = cosine * af1y + sine * af1x;
+	}
     }
 }
 
 class Ball{
-    float x, y, dx, dy, r, m;
-    //  float ddx, ddy;
+    float x, y;
+    float dx, dy;
+    float ddx, ddy;
+    float r, m;
+    boolean growing = false;
 
     // default constructor
     Ball() {
@@ -186,17 +194,18 @@ class Ball{
 	this.y = y;
 	this.dx = dx;
 	this.dy = dy;
-	//	this.ddx = this.ddy = 0;
+	this.ddx = this.ddy = 0;
 	this.r = r;
 	recalcMass();
     }
 
     void tick() {
-	//	dx += ddx;
-	//	dy += ddy;
+	// TODO limit top speed
+	dx += ddx;
+	dy += ddy;
 	x += dx;
 	y += dy;	
-	//	ddx = ddy = 0;
+	ddx = ddy = 0;
     }
 
     void draw() {

@@ -1,46 +1,72 @@
-Ball[] balls =  { 
-    new Ball(100, 400, 0, 0, 20), 
-    new Ball(700, 600, -1, -5, 160),
-    new Ball(300, 350, 0,0, 50),
-    new Ball(400, 50, 0,0, 20),
-    new Ball(450, 50, 0,0, 20),
-    new Ball(500, 50, 0,0, 20),
-    new Ball(550, 50, 0,0, 20),
-    new Ball(650, 50, 0,0, 20),
-    new Ball(700, 50, 0,0, 20),
-    new Ball(750, 50, 0,0, 20),
-    new Ball(800, 50, 0,0, 20),
-    new Ball(400, 100, 0,0, 20),
-    new Ball(500, 100, 0,0, 20),
-    new Ball(600, 100, 0,0, 20),
-    new Ball(700, 100, 0,0, 20),
-    new Ball(800, 100, 0,0, 20),
-    new Ball(400, 200, 0,0, 20),
-    new Ball(500, 200, 0,0, 20),
-    new Ball(600, 200, 0,0, 20),
-    new Ball(700, 200, 0,0, 20),
-    new Ball(800, 200, 0,0, 20)
-};
+
+Ball[] balls;
+// =  { 
+//   new Ball(100, 200, 0, 0, 20), 
+//   new Ball(800, 300, -1, -5, 200)
+//};
+
+int epoch = 0;
 
 void setup() {
-    size(1000, 800);
+    size(800, 600);
     smooth();
     noStroke();
+
+    List v = new ArrayList();
+    //    v.add(new Ball(200,200,0,0,20));
+    //v.add(new Ball(150,50,0,0,20));
+    //v.add(new Ball(200,250,-0.5,0,20));
+    for(int x=1;x<10;x++) {
+	for(int y=1;y<6;y++) {
+	    v.add(new Ball(width*((float)x/10),height*((float)y/6),0,0,20));
+	}
+    }
+    balls = new Ball[v.size()];
+    v.toArray(balls);
+
+    balls[8].dx=3.8;
+    balls[8].dy=-1.8;
+
 }
 
+boolean growing = true;
+
 void draw() {
+
+    epoch++;
+
     background(51);
     fill(204);
+
     for (int i=0; i<balls.length; i++){
 	balls[i].tick();
 	balls[i].draw();
 	balls[i].checkBoundaryCollision();
     }
+
     for(int i=0;i<balls.length-1;i++) {
 	for(int j=i+1;j<balls.length;j++) {
 	    checkObjectCollision(balls[i], balls[j]);
 	}
     }
+    
+    //    balls[int(random(balls.length))].deltaRadius(0.1);
+    Ball b = balls[5];
+    if (growing) {
+	b.setRadius(b.r+3);
+	if (b.r > 100) {
+	    b.r = 100;
+	    growing = false;
+	}
+    }
+    else {
+	b.setRadius(b.r-2);
+	if (b.r < 20) {
+	    b.setRadius(20);
+	    growing = true;
+	}
+    }
+
 }
 
 void checkObjectCollision(Ball b0, Ball b1) {
@@ -52,7 +78,9 @@ void checkObjectCollision(Ball b0, Ball b1) {
 
     // calculate magnitude of the vector separating the balls
     float bVectMag = sqrt(bvx * bvx + bvy * bvy);
-    if (bVectMag < b0.r + b1.r){
+    
+    if (bVectMag < b0.r + b1.r) {
+
 	// get angle of bVect
 	float theta  = atan2(bvy, bvx);
 	// precalculate trig values
@@ -78,19 +106,40 @@ void checkObjectCollision(Ball b0, Ball b1) {
 	float vt1x = cosine * b1.dx + sine * b1.dy;
 	float vt1y = cosine * b1.dy - sine * b1.dx;
 
+	/*
+	// rotate temp accelerations
+	float at0x = cosine * b0.ddx + sine * b0.ddy;
+	float at0y = cosine * b0.ddy - sine * b0.ddx;
+	float at1x = cosine * b1.ddx + sine * b1.ddy;
+	float at1y = cosine * b1.ddy - sine * b1.ddx;
+	*/
+
 	/* Now that velocities are rotated, you can use 1D
 	   conservation of momentum equations to calculate 
 	   the final velocity along the x-axis. */
+
 	// final rotated velocity for b[0]
 	float vf0x = ((b0.m - b1.m) * vt0x + 2 * b1.m * vt1x) / (b0.m + b1.m);
 	float vf0y = vt0y;
 	// final rotated velocity for b[0]
 	float vf1x = ((b1.m - b0.m) * vt1x + 2 * b0.m * vt0x) / (b0.m + b1.m);
 	float vf1y = vt1y;
-	
-	// hack to avoid clumping
-	bt0x += vf0x;
-	bt1x += vf1x;
+
+	/*
+	// push away from other ball based on amount of overlap
+	// NOTE: this introduces energy into the system
+	float overlap = b0.r+b1.r-bVectMag;
+	float forceMagnitude = 2000 * overlap;
+	float af0x = -forceMagnitude / b0.m;
+	float af0y = -at0y;
+	float af1x = forceMagnitude / b1.m;
+	float af1y = at1y;	
+	*/
+
+	// balls have some form of overlap so need to seperate them
+	float overlap = b0.r+b1.r-bVectMag;
+	bt0x -= overlap/2;
+	bt1x += overlap/2;
 	
 	/* Rotate ball positions and velocities back
 	   Reverse signs in trig expressions to rotate 
@@ -112,11 +161,21 @@ void checkObjectCollision(Ball b0, Ball b1) {
 	b0.dy = cosine * vf0y + sine * vf0x;
 	b1.dx = cosine * vf1x - sine * vf1y;
 	b1.dy = cosine * vf1y + sine * vf1x;
+
+	/*
+	// update accelerations
+	b0.ddx = cosine * af0x - sine * af0y;
+	b0.ddy = cosine * af0y + sine * af0x;
+	b1.ddx = cosine * af1x - sine * af1y;
+	b1.ddy = cosine * af1y + sine * af1x;
+	*/
+
     }
 }
 
 class Ball{
     float x, y, dx, dy, r, m;
+    //  float ddx, ddy;
 
     // default constructor
     Ball() {
@@ -127,13 +186,17 @@ class Ball{
 	this.y = y;
 	this.dx = dx;
 	this.dy = dy;
+	//	this.ddx = this.ddy = 0;
 	this.r = r;
-	m = r*.1;
+	recalcMass();
     }
 
     void tick() {
+	//	dx += ddx;
+	//	dy += ddy;
 	x += dx;
 	y += dy;	
+	//	ddx = ddy = 0;
     }
 
     void draw() {
@@ -157,6 +220,15 @@ class Ball{
 	    y = r;
 	    dy *= -1;
 	}
+    }
+
+    void setRadius(float r) {
+	this.r = r;
+	recalcMass();
+    }
+
+    void recalcMass() {
+       	m = 2 * PI * (r*r);
     }
 
 }

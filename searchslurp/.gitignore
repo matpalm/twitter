@@ -1,3 +1,5 @@
 db/
 collect_progress
 *results/
+viz/lib
+viz/output

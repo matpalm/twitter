@@ -16,6 +16,7 @@ void setup()
 {
     size(640, 480);
     stroke(255);
+
     frameRate(30);
     smooth();
     // Set the starting position of the shape
@@ -80,6 +81,10 @@ class Ball {
     }
 
     void draw() {
+	//stroke(255);
+	fill(255);
 	ellipse(x,y,r*2,r*2);
+	fill(100);
+	text(text, x-10, y+2);
     }
 }

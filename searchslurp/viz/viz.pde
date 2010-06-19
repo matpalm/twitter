@@ -8,8 +8,8 @@ int xdirection = 1;  // Left or Right
 int ydirection = 1;  // Top to Bottom
 
 Ball[] balls = {
-    new Ball(100,400,20,"ger"),
-    new Ball(400,100,30,"aus")
+    new Ball(100,400,-8,3,20,"ger"),
+    new Ball(400,100,2,-4,30,"aus")
 };
 
 void setup() 
@@ -28,6 +28,10 @@ void setup()
 
 void draw() {
     background(102);
+
+    for(int i=0;i<2;i++) {
+	balls[i].tick();
+    }
 
     for(int i=0;i<2;i++) {
 	balls[i].drawEdges();
@@ -61,16 +65,32 @@ void draw() {
 }
 
 class Ball {
-    float x,y,r;
+    float x,y,dx,dy,r;
     String text;
     Ball[] edgesTo;
 
-    Ball(float x, float y, float r, String text) {
+    Ball(float x, float y, float dx, float dy, float r, String text) {
  	this.x = x;
  	this.y = y;
+	this.dx = dx;
+	this.dy = dy;
  	this.r = r;
  	this.text = text;
     }   
+
+    void tick() {
+	x += dx;
+	y += dy;
+
+	// check edge of screen bouncing
+	if (x > width-r || x < r) {
+	    dx *= -1;
+	}
+	if (y > height-r || y < r) {
+	    dy *= -1;
+	}
+
+    }
     
     void drawEdges() {
 	if (edgesTo!=null) {

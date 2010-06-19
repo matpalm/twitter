@@ -83,12 +83,10 @@ class Ball {
 	y += dy;
 
 	// check edge of screen bouncing
-	if (x > width-r || x < r) {
-	    dx *= -1;
-	}
-	if (y > height-r || y < r) {
-	    dy *= -1;
-	}
+	if (x > width-r  || x < r) { dx *= -1; }
+	if (y > height-r || y < r) { dy *= -1; }
+
+	// check other ball collision
 
     }
     

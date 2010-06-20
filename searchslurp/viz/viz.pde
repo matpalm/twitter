@@ -1,8 +1,9 @@
 
+final float INITIAL_BALL_RADIUS = 20;
 final float MAX_TOTAL_SPEED = 50;
 final float REPULSION_FORCE_FROM_GROWING_BALL = 1000;
 final int TICKS_PER_HOUR = 10; // ticks in simulation ticks, hours from load data
-final float MIN_BALL_SIZE = 2;
+final float MIN_BALL_RADIUS = 2;
 
 float TOTAL_AREA = 0; // across all balls
 
@@ -25,11 +26,10 @@ void setup() {
 	for(int row=1;row<5;row++) {
 	    float x = width*((float)col/9) + random(-5,5);
 	    float y = height*((float)row/5) + random(-5,5);
-	    float r = 20;
-	    Ball b = new Ball(x,y, 0,0, r, codes[c]);
+	    Ball b = new Ball(x,y, 0,0, INITIAL_BALL_RADIUS, codes[c]);
 	    v.add(b);
 	    ballsByCode.put(b.label,b);
-	    TOTAL_AREA += PI * r * r;
+	    TOTAL_AREA += PI * INITIAL_BALL_RADIUS * INITIAL_BALL_RADIUS;
 	    c++;
 	}
     }
@@ -42,14 +42,7 @@ void setup() {
 }
 
 void draw() {        
-    background(51);
-
-    /*
-    float[] r = (float[])records.get("alg");
-    for (int i=0;i<r.length;i++) {
-	System.out.println("r["+i+"]="+r[i]);
-    }
-    */
+    background(40);
 
     // set target ball sizes!
     if (tick%TICKS_PER_HOUR==0) {
@@ -276,7 +269,7 @@ class Ball {
 
     void resize() {
 	r += radiusDeltaPerTick;
-	if (r<MIN_BALL_SIZE) { r=MIN_BALL_SIZE; }
+	if (r<MIN_BALL_RADIUS) { r=MIN_BALL_RADIUS; }
 	growing = (radiusDeltaPerTick > 0);
     }
 

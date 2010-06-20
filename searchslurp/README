@@ -27,22 +27,12 @@ and then catch up the existing documents with a call to update_existing_document
 for poking around in irb...
 irb> require 'rubygems'; require 'mongo'; mongo = Mongo::Connection.new;db = mongo.db 'tweets';col = db['tweets']
 
-
-
 -----------------------
 
 starting collecting at...
 Sat Jun 12 12:29:25 +1000 2010
 
-
-1   12/06 00:00	    Johannesburg - JSC		South Africa	1:1 (0:0)	Mexico	
-2   12/06 04:30	    Cape Town	   Uruguay	0:0   France	
-3   13/06 00:00	    Johannesburg - JEP		      Argentina	1:0 (1:0)	Nigeria	
-4   12/06 21:30	    Nelson Mandela Bay/Port Elizabeth 		Korea Republic	2:0 (2:0)	Greece	
-5   13/06 04:30	    Rustenburg	   	    England		1:1 (1:1)	USA 
-6   13/06 21:30	    Polokwane		    			Algeria		0:1 (0:0)	Slovenia	
-7   14/06 04:30	    Durban							Germany		4:0 (2:0)	Australia 
-8   14/06 00:00	    Tshwane/Pretoria								Serbia		0:1 (0:0) Ghana 
+----------------------------------
 
 plot of use of #country_icons
 

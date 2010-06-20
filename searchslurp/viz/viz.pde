@@ -42,6 +42,7 @@ void setup() {
 }
 
 void draw() {        
+    
     background(40);
 
     // set target ball sizes!
@@ -91,6 +92,14 @@ void draw() {
     }
 
     tick++;
+
+    if (tick==3) {
+	try {
+	    Thread.sleep(5000);
+	}
+	catch (Exception ignore) {
+	}
+    }
 
 }
 

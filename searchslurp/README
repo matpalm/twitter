@@ -52,6 +52,8 @@ been working on some processing viz
 for it we need a dataset with code/time/freq 
 to animate 
 
+$ ./dump_tweets.rb > tweets
+
 # for ball sizes
 $ cat tweets | ./extract_tokens.rb | sort | uniq -c > token_freqs
 $ cat token_freqs | ./token_freqs_to_load_data.rb > token_freqs.loaddata.tmp

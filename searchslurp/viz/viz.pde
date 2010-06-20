@@ -13,13 +13,19 @@ void setup() {
     textAlign(CENTER,CENTER);
 
     List v = new ArrayList();
-    String codes[] = { "aus","ger","fra" };
+    String codes[] = { 
+	"usa","mex","aus","hon","bra","ger","par","uru",
+	"chi","arg","alg","civ","gha","nga","cmr","rsa",
+	"prk","kor","jpn","nzl","eng","ned","den","fra",
+	"esp","por","sui","ita","svn","svk","srb","gre"
+    };    
+    int c = 0;
     for(int x=1;x<9;x++) {
 	for(int y=1;y<5;y++) {
 	    float ball_x = width*((float)x/9);
 	    float ball_y = height*((float)y/5);
-	    String code = codes[(x+y)%codes.length];
-	    v.add(new Ball(ball_x,ball_y,0,0,20,code));
+	    v.add(new Ball(ball_x,ball_y,0,0,20,codes[c]));
+	    c++;
 	}
     }
     balls = new Ball[v.size()];

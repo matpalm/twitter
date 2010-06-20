@@ -9,6 +9,8 @@ float TOTAL_AREA = 0; // across all balls
 Ball[] balls;
 Map ballsByCode = new HashMap();
 
+Edge[][] edges;
+
 int tick = 0;
 
 void setup() {
@@ -35,7 +37,7 @@ void setup() {
     v.toArray(balls);
 
     loadSizeDataIntoBalls();
-    loadEdgeDataIntoBalls();
+    loadEdgeData();
 
 }
 
@@ -65,12 +67,15 @@ void draw() {
 	balls[i].resize();
     }
 
-    // draw connectors, then balls themselves
-    for (int i=0; i<balls.length; i++) {
-	balls[i].drawConnectors();
+    // draw edges, then balls themselves
+    int edgeSet = tick/TICKS_PER_HOUR;
+    if (edgeSet < edges.length) {
+	for (int i=0; i<edges[edgeSet].length; i++) {
+	    edges[edgeSet][i].draw();
+	}
     }
     for (int i=0; i<balls.length; i++) {
-	balls[i].drawSelf();
+	balls[i].draw();
     }
 
     // do collision checks
@@ -90,11 +95,6 @@ void draw() {
 	for(int i=0;i<balls.length;i++) {
 	    balls[i].scaleSpeedBy(reduceRatio);
 	}
-    }
-
-    // change sizes
-    for(int i=0;i<balls.length;i++) {
-
     }
 
     tick++;
@@ -209,7 +209,7 @@ void checkObjectCollision(Ball b0, Ball b1) {
     }
 }
 
-class Ball{
+class Ball {
     float x, y;
     float dx, dy, speed;
     float ddx, ddy;
@@ -244,11 +244,7 @@ class Ball{
 	ddx = ddy = 0;
     }
 
-    void drawConnectors() {
-
-    }
-
-    void drawSelf() {
+    void draw() {
 	fill(204);
 	ellipse(x, y, r*2, r*2);
 
@@ -308,6 +304,20 @@ class Ball{
 	float targetArea = TOTAL_AREA * targetProportion[recordIdx];
 	float targetRadius = (float)sqrt(targetArea/PI);
 	radiusDeltaPerTick = (targetRadius - r) / TICKS_PER_HOUR;
+    }
+
+}
+
+class Edge {
+    Ball from,to;
+
+    Edge(String from, String to) {
+	this.from = (Ball)ballsByCode.get(from);
+	this.to = (Ball)ballsByCode.get(to);
+    }
+
+    void draw() {
+	line(from.x,from.y, to.x,to.y);
     }
 
 }

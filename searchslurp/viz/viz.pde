@@ -1,10 +1,13 @@
 
-final float MAX_TOTAL_SPEED = 200;
+final float MAX_TOTAL_SPEED = 50;
 final float REPULSION_FORCE_FROM_GROWING_BALL = 1000;
+final int TICKS_PER_HOUR = 10; // ticks in simulation ticks, hours from load data
+
+float TOTAL_AREA = 0; // across all balls
 
 Ball[] balls;
 
-int epoch = 0;
+int tick = 0;
 
 void setup() {
     size(800, 600);
@@ -12,72 +15,76 @@ void setup() {
     stroke(255);
     textAlign(CENTER,CENTER);
 
+    populateRecords();
+
     List v = new ArrayList();
-    String codes[] = { 
-	"usa","mex","aus","hon","bra","ger","par","uru",
-	"chi","arg","alg","civ","gha","nga","cmr","rsa",
-	"prk","kor","jpn","nzl","eng","ned","den","fra",
-	"esp","por","sui","ita","svn","svk","srb","gre"
-    };    
     int c = 0;
-    for(int x=1;x<9;x++) {
-	for(int y=1;y<5;y++) {
-	    float ball_x = width*((float)x/9);
-	    float ball_y = height*((float)y/5);
-	    v.add(new Ball(ball_x,ball_y,0,0,20,codes[c]));
+    for(int col=1;col<9;col++) {
+	for(int row=1;row<5;row++) {
+	    float x = width*((float)col/9) + random(-5,5);
+	    float y = height*((float)row/5) + random(-5,5);
+	    float r = 20;
+	    v.add(new Ball(x,y, 0,0, r, codes[c]));
+	    TOTAL_AREA += PI * r * r;
 	    c++;
 	}
     }
     balls = new Ball[v.size()];
     v.toArray(balls);
-
-    balls[5].growing = true;
 }
 
-boolean growing = true;
+void draw() {        
 
-void draw() {    
+    /*
+    float[] r = (float[])records.get("alg");
+    for (int i=0;i<r.length;i++) {
+	System.out.println("r["+i+"]="+r[i]);
+    }
+    */
 
-    epoch++;
+    // set target ball sizes!
+    if (tick%TICKS_PER_HOUR==0) {
+	int idx = tick/TICKS_PER_HOUR;
+	System.out.println("tick="+tick+" idx="+idx);
+	for (int i=0; i<balls.length; i++) {
+	    balls[i].setTargetSizeForRecord(idx);
+	}
+    }
+
     background(51);
 
     // move balls
-    for (int i=0; i<balls.length; i++){
+    for (int i=0; i<balls.length; i++) {
 	balls[i].tick();
 	balls[i].draw();
 	balls[i].checkBoundaryCollision();
     }
 
     // do collision checks
-    for(int i=0;i<balls.length-1;i++) 
-	for(int j=i+1;j<balls.length;j++) 
+    for(int i=0;i<balls.length-1;i++) {
+	for(int j=i+1;j<balls.length;j++) {
 	    checkObjectCollision(balls[i], balls[j]);
+	}
+    }
     
     // cap max speed of all balls
     float totalSpeed = 0;
-    for(int i=0;i<balls.length;i++)
+    for(int i=0;i<balls.length;i++) {
 	totalSpeed += balls[i].speed;
+    }
     if (totalSpeed > MAX_TOTAL_SPEED) {
 	float reduceRatio = MAX_TOTAL_SPEED / totalSpeed;
-	for(int i=0;i<balls.length;i++)
+	for(int i=0;i<balls.length;i++) {
 	    balls[i].scaleSpeedBy(reduceRatio);
-    }
-    
-    Ball b = balls[5];
-    if (b.growing) {
-	b.setRadius(b.r+3);
-	if (b.r > 100) {
-	    b.r = 100;
-	    b.growing = false;
 	}
     }
-    else {
-	b.setRadius(b.r-2);
-	if (b.r < 20) {
-	    b.setRadius(20);
-	    b.growing = true;
-	}
+
+    // change sizes
+    for(int i=0;i<balls.length;i++) {
+	balls[i].resize();
     }
+
+    tick++;
 
 }
 
@@ -198,6 +205,8 @@ class Ball{
     boolean growing = false;
     String label;
 
+    float radiusDeltaPerTick;
+
     // default constructor
     Ball() {
     }
@@ -226,8 +235,10 @@ class Ball{
 	fill(204);
 	ellipse(x, y, r*2, r*2);
 
-	fill(255, 0, 0);
-	textSize(r * 0.9);
+	fill(255, 0, 255);
+	float textSize = r * 0.9;
+	if (textSize<20) textSize = 20;
+	textSize(textSize);
 	text(label, x, y-r*0.15); // 0.15 required since vertical centre not honoured
     }
 
@@ -250,6 +261,26 @@ class Ball{
 	}
     }
 
+    void resize() {
+	r += radiusDeltaPerTick;
+	growing = (radiusDeltaPerTick > 0);
+	/*
+	System.out.print(label+" r="+r+" targetR="+targetRadius);
+	float radiusDiff = r-targetRadius;
+	if (abs(radiusDiff)<0.2) {
+	    r = targetRadius;
+	}
+	if (r==targetRadius) {
+	    System.out.print(" at target!");
+	}
+	else {
+	    float halfWay
+	    System.out.print(" need RESIZE!!");
+	}
+	System.out.println();
+	*/
+    }
+
     void scaleSpeedBy(float ratio) {
 	dx *= ratio;
 	dy *= ratio;
@@ -267,6 +298,15 @@ class Ball{
 
     void recalcSpeed() {
 	speed = (float)sqrt(dx*dx+dy*dy);	
+    }
+
+    void setTargetSizeForRecord(int recordIdx) {
+	// calculate target radius to move towards for next HOURS worth of TICKS
+	float targetProportion = ((float[])records.get(label))[recordIdx];
+	float targetArea = TOTAL_AREA * targetProportion;
+	float targetRadius = (float)sqrt(targetArea/PI);
+	radiusDeltaPerTick = (targetRadius - r) / TICKS_PER_HOUR;
+	System.out.println(label+" for targetRadius="+targetRadius+" setting radiusDeltaPerTick="+radiusDeltaPerTick);
     }
 
 }

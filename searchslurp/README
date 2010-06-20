@@ -66,3 +66,15 @@ $ pig -x local -p input=country_code_pairs.freqs -p output=top5_country_code_pai
 displaying a graph for just the top 30 edges (by frequency) 
 $ sort -nr country_code_pairs.freqs | head -30 | ./remove_leading_frequency.pl | ./dotify.rb | ./dotify.rb | dot -Tpng > test.png
 
+
+--------------------------
+
+been working on some processing viz
+for it we need a dataset with code/time/freq 
+to animate 
+
+# extract token freqs
+$ cat tweets | ./extract_tokens.rb | sort | uniq -c > token_freqs
+
+# bake it into a form that loadable with....
+$ cat token_freqs | ./token_freqs_to_load_data.rb

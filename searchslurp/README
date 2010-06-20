@@ -56,25 +56,19 @@ $ grep "goal\|aus\|ger\|worldcup" freq_dts_token  | ./write_html.rb > test.html
 
 cat tweets | ./country_codes.rb | sort | uniq -c > country_codes_freqs.tsv
 
---- top tokens (per country)
-
-$ ./dump_tweets.rb > tweets
-$ cat tweets | ./country_code_pairs.rb > country_code_pairs
-$ cat country_code_pairs | sort | uniq -c | perl -plne's/^\s+//;s/ /\t/;' > country_code_pairs.freqs
-$ pig -x local -p input=country_code_pairs.freqs -p output=top5_country_code_pairs.tsv top_per_country.pig 
-
-displaying a graph for just the top 30 edges (by frequency) 
-$ sort -nr country_code_pairs.freqs | head -30 | ./remove_leading_frequency.pl | ./dotify.rb | ./dotify.rb | dot -Tpng > test.png
-
-
 --------------------------
 
 been working on some processing viz
 for it we need a dataset with code/time/freq 
 to animate 
 
-# extract token freqs
+# for ball sizes
 $ cat tweets | ./extract_tokens.rb | sort | uniq -c > token_freqs
+$ cat token_freqs | ./token_freqs_to_load_data.rb > token_freqs.loaddata.tmp
+# then pull that into data.pde
 
-# bake it into a form that loadable with....
-$ cat token_freqs | ./token_freqs_to_load_data.rb
+# for edges
+$ cat tweets | ./extract_country_code_pairs.rb | sort | uniq -c | ./tabify.rb > code_pair_freqs
+$ pig -x local -p input=code_pair_freqs -p output=topn_code_pair_freqs -p topn=10 top_per_time.pig
+$ cat topn_code_pair_freqs | ./topn_to_load_data.rb > topn.loaddata.tmp
+

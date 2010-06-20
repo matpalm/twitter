@@ -43,7 +43,7 @@ loop do
       url_path = resp['refresh_url'] 
       url_path =~ /since_id=(\d+)/
       since_id = $1
-      sleep_time = 45
+      sleep_time = 40
     end
 
     # write progress to file

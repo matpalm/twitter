@@ -51,5 +51,5 @@ end
 # records.put("civ", new float[]{0.031,0.029});
 tag_to_freqs.each do |tag,freqs|
   freqs_str = freqs.collect { |freq| sprintf("%0.03f",freq) }.join(',')
-  puts "records.put(\"#{tag}\", new float[]{#{freqs_str}});"
+  puts "((Ball)ballsByCode.get(\"#{tag}\")).targetProportion = new float[]{#{freqs_str}};"
 end

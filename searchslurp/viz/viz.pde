@@ -54,6 +54,14 @@ void draw() {
 	}
     }
 
+    // apply forces between balls
+    int edgeSet = tick/TICKS_PER_HOUR;
+    if (edgeSet < edges.length) {
+	for (int i=0; i<edges[edgeSet].length; i++) {	    
+	    edges[edgeSet][i].apply();
+	}
+    }
+
     // move balls
     for (int i=0; i<balls.length; i++) {
 	balls[i].tick();
@@ -61,13 +69,7 @@ void draw() {
 	balls[i].resize();
     }
 
-    // draw edges, then balls themselves
-    int edgeSet = tick/TICKS_PER_HOUR;
-    if (edgeSet < edges.length) {
-	for (int i=0; i<edges[edgeSet].length; i++) {
-	    edges[edgeSet][i].draw();
-	}
-    }
+    // draw balls
     for (int i=0; i<balls.length; i++) {
 	balls[i].draw();
     }
@@ -93,6 +95,7 @@ void draw() {
 
     tick++;
 
+    /*
     if (tick==3) {
 	try {
 	    Thread.sleep(5000);
@@ -100,6 +103,7 @@ void draw() {
 	catch (Exception ignore) {
 	}
     }
+    */
 
 }
 
@@ -311,15 +315,49 @@ class Ball {
 }
 
 class Edge {
-    Ball from,to;
+    Ball b0,b1;
 
     Edge(String from, String to) {
-	this.from = (Ball)ballsByCode.get(from);
-	this.to = (Ball)ballsByCode.get(to);
+	b0 = (Ball)ballsByCode.get(from);
+	b1 = (Ball)ballsByCode.get(to);
     }
 
     void draw() {
-	line(from.x,from.y, to.x,to.y);
+	line(b0.x,b0.y, b1.x,b1.y);
+    }
+
+    void apply() {
+	draw();
+
+	// get distances between the balls components
+	float bvx = b1.x - b0.x;
+	float bvy = b1.y - b0.y;
+
+	// get angle of bVect
+	float theta  = atan2(bvy, bvx);
+	// precalculate trig values
+	float sine = sin(theta);
+	float cosine = cos(theta);
+
+	// rotate Temporary velocities to x axis
+	float vt0x = cosine * b0.dx + sine * b0.dy;
+	float vt0y = cosine * b0.dy - sine * b0.dx;
+	float vt1x = cosine * b1.dx + sine * b1.dy;
+	float vt1y = cosine * b1.dy - sine * b1.dx;
+
+	// apply force along x axis
+	float distance_sqrd = bvx*bvx + bvy*bvy;
+	float G = 0.98;
+	float gravitation_force = (G * b0.m * b1.m) / distance_sqrd;
+	vt0x += gravitation_force / b1.m;
+	vt1x -= gravitation_force / b0.m;
+
+	// update velocities
+	b0.dx = cosine * vt0x - sine * vt0y;
+	b0.dy = cosine * vt0y + sine * vt0x;
+	b1.dx = cosine * vt1x - sine * vt1y;
+	b1.dy = cosine * vt1y + sine * vt1x;
+
     }
 
 }

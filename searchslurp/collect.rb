@@ -17,18 +17,20 @@ since_id = nil
 
 loader = MongoLoader.new
 
+sleep_time = 1
+
 loop do
-  printf "#{Time.now} "
-
-  # run new query
-  request_url = url_root + url_path
-  request_url += "&since_id=#{since_id}" if since_id  # sometimes lost on pagination (?)
-  request_url += "&rpp=100" # sometimes lost also (?)
-
-  cmd = "curl -s '#{request_url}'"
-  resp_text = `#{cmd}`	
-
   begin
+    printf "#{Time.now} "
+
+    # run new query
+    request_url = url_root + url_path
+    request_url += "&since_id=#{since_id}" if since_id  # sometimes lost on pagination (?)
+    request_url += "&rpp=100" # sometimes lost also (?)
+    
+    cmd = "curl -s '#{request_url}'"
+    resp_text = `#{cmd}`	
+
     # parse response
     resp = JSON.parse(resp_text)
 

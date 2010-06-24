@@ -95,7 +95,6 @@ void draw() {
 
     tick++;
 
-    /*
     if (tick==3) {
 	try {
 	    Thread.sleep(5000);
@@ -103,7 +102,7 @@ void draw() {
 	catch (Exception ignore) {
 	}
     }
-    */
+
 
 }
 
@@ -347,7 +346,7 @@ class Edge {
 
 	// apply force along x axis
 	float distance_sqrd = bvx*bvx + bvy*bvy;
-	float G = 0.98;
+	float G = 0.5;
 	float gravitation_force = (G * b0.m * b1.m) / distance_sqrd;
 	vt0x += gravitation_force / b1.m;
 	vt1x -= gravitation_force / b0.m;

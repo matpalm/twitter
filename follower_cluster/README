@@ -1,0 +1,12 @@
+
+follower cluster
+
+using infochimps wordbag api can i cluster the people i follow on twitter?
+
+first get the peoples user ids...
+$ curl -s 'http://api.twitter.com/1/friends/ids.json?id=mat_kelcey' > friends.json
+
+then stick that into ./get_words_for_friends.rb which injects into mongo
+$ ./get_words_for_friends.rb INFOCHIMPS_APIKEY
+
+irb$ require 'rubygems'; require 'mongo'; mongo = Mongo::Connection.new('localhost',12300)

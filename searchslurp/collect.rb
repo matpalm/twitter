@@ -3,6 +3,7 @@ require 'rubygems'
 require 'json'
 require 'cgi'
 require 'mongo_loader.rb'
+require 'curl'
 
 raise 'usage: collect.rb "search term"' unless ARGV.length==1
 query_term = ARGV.first
@@ -27,11 +28,8 @@ loop do
     request_url = url_root + url_path
     request_url += "&since_id=#{since_id}" if since_id  # sometimes lost on pagination (?)
     request_url += "&rpp=100" # sometimes lost also (?)
-    
-    cmd = "curl -s '#{request_url}'"
-    resp_text = `#{cmd}`	
 
-    # parse response
+    resp_text = Curl::Easy.perform(request_url).body_str
     resp = JSON.parse(resp_text)
 
     # load into mongo

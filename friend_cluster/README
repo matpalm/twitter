@@ -3,13 +3,23 @@ follower cluster
 
 using infochimps wordbag api can i cluster the people i follow on twitter?
 
-first get the peoples user ids...
-$ curl -s 'http://api.twitter.com/1/friends/ids.json?id=mat_kelcey' > friends.json
+get friends and stick that into ./get_words_for_friends.rb which injects into mongo
+$ ./get_words_for_friends.rb mat_kelcey INFOCHIMPS_APIKEY
 
-then stick that into ./get_words_for_friends.rb which injects into mongo
-$ ./get_words_for_friends.rb INFOCHIMPS_APIKEY
+for my 142 friends there is mostly no overlap with terms
+of the 10,000 pairings there are only 3100 cases where there is at least one item in common
+the max overlap is 15 items, median 0, mean 0.4 :(
+
+running tokens through a snowball stemmer (http://github.com/aurelian/ruby-stemmer) improves a fraction...
+max of 17 with mean of 0.6
+
+so without even worrying about a similiarity metric what about just seeing who has any overlapping tokens?
 
 run over and cluster ppl with
-$ ./cluster.rb
+$ ./cluster.rb | sort -nr > similiarities.tsv
+$ cat similiarities.tsv | head -n 35 | ./dotify.rb | circo -Tpng > top35.png
 
-irb$ require 'rubygems'; require 'mongo'; mongo = Mongo::Connection.new('localhost',12300); db = mongo.db 'wordbag'
+--- irbness
+irb$ require 'rubygems';require 'mongo';mongo=Mongo::Connection.new('localhost',12300);users=mongo.db('wordbag')['users']
+
+

@@ -9,7 +9,13 @@ USER, APIKEY = ARGV
 
 class String
   def fetch_as_json
-    puts "fetching for #{self}"
+=begin
+    cmd = "curl -s"
+    cmd += " -u XYZ:ABC" if !!(self=~/twitter/)
+    cmd += " #{self}"
+    puts "[#{cmd}]"
+    JSON::parse(`#{cmd}`) # wtf? curb doesnt support uid/pwd?
+=end
     JSON::parse(Curl::Easy.perform(self).body_str)
   end
 end

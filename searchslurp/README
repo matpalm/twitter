@@ -44,7 +44,12 @@ $ grep "goal\|aus\|ger\|worldcup" freq_dts_token  | ./write_html.rb > test.html
 
 --- top country code freqs
 
-cat tweets | ./country_codes.rb | sort | uniq -c > country_codes_freqs.tsv
+$ cat tweets | ./country_codes.rb | sort | uniq -c > country_codes_freqs.tsv
+
+--- tweets per hour
+
+$ cat tweets.[123] | ./tweets_per_hour.rb | sort | uniq -c | sort -k2 -n | perl -plne's/^\s+//' > tweets_per_hour.out
+R> plot(read.delim('tweets_per_hour.out', sep=' ', header=FALSE)$V1, type='l')
 
 --------------------------
 
@@ -64,7 +69,7 @@ $ cat tweets | ./extract_country_code_pairs.rb | sort | uniq -c | ./tabify.rb > 
 $ pig -x local -p input=code_pair_freqs -p output=topn_code_pair_freqs -p topn=10 top_per_time.pig
 $ cat topn_code_pair_freqs | ./topn_to_load_data.rb > topn.loaddata.tmp
 
----------------------------------
+---------------------------
 
 for vimeo upload
 $ recordmydesktop -x 2000 -y 300 --width=795 --height=590

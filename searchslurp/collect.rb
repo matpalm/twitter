@@ -10,7 +10,7 @@ query_term = ARGV.first
 query = "?q=#{CGI.escape(query_term)}"
 
 url_root = 'http://search.twitter.com/search.json'
-url_path = File.exists?('collect_progress') ? File.read('collect_progress') : "#{query}&rpp=100"
+url_path = "#{query}&rpp=100"
 
 puts "initial url_path=#{url_path}"
 
@@ -46,11 +46,6 @@ loop do
       sleep_time = 40
     end
 
-    # write progress to file
-    url_file = File.open('collect_progress','w')	
-    url_file.puts url_path
-    url_file.close
-    
   rescue Exception => e
 
     # in case of exception, start again!
